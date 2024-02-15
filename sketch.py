@@ -77,6 +77,108 @@ col_nomes = [linha[2] for linha in sheet.values] # Dados da coluna 3 do excel
 #    print(f"{col_codigos[cliente_aleatorio]} | {col_emails[cliente_aleatorio]} | {col_nomes[cliente_aleatorio]}")
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Pergunta qual o tipo do email.
+tipo_email = input("Tipo do email. Digite 1 para 'Normal', 2 para 'Lembrete' ou 3 para 'Parcelamento': ")
+
+# ERRO: Fecha o programa.
+if tipo_email not in ["1", "2", "3"]:
+    print("TIPO INVÁLIDO, por favor reinicie o programa.")
+    sys.exit()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Define a data atual com formatação adequada.
+data_agora = datetime.now()
+data_dia = 20
+data_mes = data_agora.month
+data_ano = data_agora.year
+
+# Inclui um 0 (zero) caso o mês não tenha dois dígitos.
+if data_mes < 10: data_mes = f"0{data_mes}"
+
+# Cria uma data com a formatação correta.
+data_formatada = f"{data_dia}/{data_mes}/{data_ano}"
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Confirma com o usuário a(s) data(s) para comunicação.
+data_boleto_DAS = None
+data_boleto_DARF = None
+data_boleto_unica = None
+
+# Caso seja um email NORMAL ou LEMBRETE.
+if int(tipo_email) < 3:
+
+    mesma_data = input("Os boletos DAS e DARF vencem no mesmo dia? Digite 'S' para sim e 'N' para não: ")
+
+    # Datas iguais.
+    if mesma_data in ["s", "S"]:
+        data_boleto_unica = data_formatada
+
+    # Datas diferentes.
+    elif mesma_data in ["n", "N"]:
+
+        data_boleto_DAS = input("Data de vencimento DAS no formato DD/MM/AAAA: ")
+        data_boleto_DARF = input("Data de vencimento DARF no formato DD/MM/AAAA: ")
+
+        # Confirma a validade e formatação das datas fornecidas.
+        try:
+            datetime.strptime(data_boleto_DAS, "%d/%m/%Y")
+            datetime.strptime(data_boleto_DARF, "%d/%m/%Y")
+
+        # ERRO: Fecha o programa.
+        except ValueError:
+            print("DATA(S) INVÁLIDA(S), por favor reinicie o programa.")
+            sys.exit()
+
+    # ERRO: Fecha o programa.
+    else:
+        print("CONFIRMAÇÃO INVÁLIDA, por favor reinicie o programa.")
+        sys.exit()
+
+# Caso seja um email de PARCELAMENTO.
+else:
+
+    # Pede a data de vencimento.
+    data_boleto_unica = input("Data de vencimento no formato DD/MM/AAAA: ")
+
+    # Confirma a validade e formatação das datas fornecidas.
+    try:
+        datetime.strptime(data_boleto_unica, "%d/%m/%Y")
+
+    # ERRO: Fecha o programa.
+    except ValueError:
+        print("DATA INVÁLIDA, por favor reinicie o programa.")
+        sys.exit()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Caso necessário, confirma a validade das datas fornecidas:
+
+confirmacao_texto = None
+
+# Caso seja um email NORMAL ou LEMBRETE.
+if int(tipo_email) < 3:
+    if data_boleto_unica == None:
+        confirmacao_texto = "Ambas as datas estão corretas? Digite 'S' para sim ou 'N' para não: "
+
+# Caso seja um email de PARCELAMENTO.
+else:
+    confirmacao_texto = "A data está correta? Digite 'S' para sim ou 'N' para não: "
+
+# Confirmação.
+if confirmacao_texto != None:
+
+    confirmacao = input(confirmacao_texto)
+
+    # ERRO: Fecha o programa.
+    if confirmacao in ["n", "N"]:
+        print("DATA(S) INVÁLIDA(S), por favor reinicie o programa.")
+        sys.exit()
+
+    # ERRO: Fecha o programa.
+    elif confirmacao not in ["s", "S"]:
+        print("CONFIRMAÇÃO INVÁLIDA, por favor reinicie o programa.")
+        sys.exit()
+
+#-----------------------------------------------------------------------------------------------------------------------
 # Construção do servidor.
 
 # Dados para o servidor.
@@ -90,61 +192,6 @@ contexto = ssl.create_default_context()
 servidor = smtplib.SMTP("smtp.gmail.com", 587)
 servidor.starttls(context=contexto)
 servidor.login(email_origem, senha_do_app)
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Pergunta qual o tipo do email.
-tipo_email = input("Tipo do email. Digite 1 para 'Normal', 2 para 'Lembrete' ou 3 para 'Parcelamento': ")
-
-# Confirma a validade do tipo do email fornecido.
-try:
-    if tipo_email not in ["1", "2", "3"]:
-        raise ValueError()
-
-# Fecha o programa caso o tipo fornecido esteja errado.
-except ValueError:
-    print("TIPO INVÁLIDO, por favor reinicie o programa.")
-    sys.exit()
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Checa a validade dos dados fornecidos relativos ao tipo de email desejado.
-
-# Cria variáveis vazias para prevenir erros ao criar o email.
-data_boleto_DAS = None
-data_boleto_DARF = None
-data_boleto_unica = None # Exclusiva para Parcelamentos.
-data_para_assunto = None # Usada no "assunto" do email.
-
-# Caso seja um email NORMAL ou LEMBRETE.
-if int(tipo_email) < 3:
-
-    # Pede as datas de vencimento.
-    data_boleto_DAS = input("Data de vencimento DAS no formato DD/MM/AAAA: ")
-    data_boleto_DARF = input("Data de vencimento DARF no formato DD/MM/AAAA: ")
-
-    # Confirma a validade e formatação das datas fornecidas.
-    try:
-        datetime.strptime(data_boleto_DAS, "%d/%m/%Y")
-        datetime.strptime(data_boleto_DARF, "%d/%m/%Y")
-
-    # Fecha o programa caso as datas fornecidos sejam inválidas.
-    except ValueError:
-        print("DATA(S) INVÁLIDA(S), por favor reinicie o programa.")
-        sys.exit()
-
-# Caso seja um email de PARCELAMENTO.
-else:
-    
-    # Pede a data de vencimento.
-    data_boleto_unica = input("Data de vencimento no formato DD/MM/AAAA: ")
-
-    # Confirma a validade e formatação das datas fornecidas.
-    try:
-        datetime.strptime(data_boleto_unica, "%d/%m/%Y")
-
-    # Fecha o programa caso as datas fornecidos sejam inválidas.
-    except ValueError:
-        print("DATA INVÁLIDA, por favor reinicie o programa.")
-        sys.exit()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Variáveis para registro de listas.
@@ -164,8 +211,8 @@ lista_faturamentos = []
 lista_DARF = []
 lista_parcelamentos = [] # PODE CONTER MAIS DE 1 RESULTADO POR CLIENTE!
 
-# Se o email NÃO FOR de parcelamento!
-# Procura as pastas DAS, Faturamentos e FOLHA entre todos os arquivos da pasta.
+# Caso seja um email NORMAL ou LEMBRETE.
+# Procura as pastas "DAS", "Faturamentos" e "FOLHA" entre todos os arquivos da pasta.
 if int(tipo_email) < 3:
 
     for item in pastas_normal_lembrete:
@@ -195,7 +242,8 @@ if int(tipo_email) < 3:
                     lista_cod_DARF.append(int(codigo_cliente))
                     lista_DARF.append(nome_arquivo)
 
-# Procura a pasta Parcelamentos.
+# Caso seja um email de PARCELAMENTO.
+# Procura a pasta "Parcelamentos".
 else:
 
     # Popula listas de códigos de cliente e seus respectivos nomes de documento.
@@ -249,23 +297,10 @@ for fileira, codigo_cliente in enumerate(col_codigos):
         worksheet.write("D" + str(indice_excel), nome_empresa)
 
         #---------------------------------------------------------------------------------------------------------------
-        # Define a data que aparece no título do email.
-
-        # Se o email NÃO FOR de parcelamento!
-        if int(tipo_email) < 3:
-    
-            if data_boleto_DAS == data_boleto_DARF:
-                data_para_assunto = data_boleto_DAS
-
-            else:
-                data_para_assunto = f"{data_boleto_DAS} e {data_boleto_DARF}"
-        
-        # Email de parcelamento.
-        else:
-            data_para_assunto = data_boleto_unica
-
-        #---------------------------------------------------------------------------------------------------------------
         # Define o texto que será enviado dependendo do tipo de email.
+
+        # Data usada apenas nessa função.
+        data_assunto = data_boleto_unica if (data_boleto_unica != None) else f"{data_boleto_DAS} e {data_boleto_DARF}"
 
         # Cria a mensagem (objeto do tipo MIME), para poder aceitar HTML e anexos.
         mensagem = MIMEMultipart("alternative")
