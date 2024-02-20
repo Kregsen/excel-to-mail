@@ -1,0 +1,23 @@
+Things the app needs to do.
+
+    . Software designed specifically for "Finanz Contábil".
+    . Has to be a standalone application.
+
+    . Allows you to choose a ".xlsx" file to work with.
+    . The file columns must be formatted as: "company_code/email/company_name"
+    . There might be one or multiple emails.
+    . They must be divided by ";".
+
+    . Uses the file's path to find attachment folders.
+    . Attachment folders MUST be named "DAS", "Faturamentos", "FOLHA", and "Parcelamentos".
+
+    . Dropdown: Type of process, either "Normal", "Lembrete" or "Parcelamento".
+
+    . If NOT "Parcelamentos":
+
+        . Toggle: Same expiry date, either "true" or "false".
+        . If "true": Locks date selections below to "20/mm/YYYY".
+        . If "false": Unlocks date selections below.
+
+        . Date selection "DAS": "dd/mm/YYYY"; Auto selects month and year.
+        . Date selection "DARF": "dd/mm/YYYY"; Auto selects month and year.
