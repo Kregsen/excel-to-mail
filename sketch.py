@@ -78,10 +78,10 @@ col_nomes = [linha[2] for linha in sheet.values] # Dados da coluna 3 do excel
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Pergunta qual o tipo do email.
-tipo_email = input("Tipo do email. Digite 1 para 'Normal', 2 para 'Lembrete' ou 3 para 'Parcelamento': ")
+tipo_email = input("Tipo do email. Digite 1 p/ 'Normal', 2 p/ 'Lembrete', 3 p/ 'Parcelamento' ou 4 p/ 'Vencido': ")
 
 # ERRO: Fecha o programa.
-if tipo_email not in ["1", "2", "3"]:
+if tipo_email not in ["1", "2", "3", "4"]:
     print("TIPO INVÁLIDO, por favor reinicie o programa.")
     sys.exit()
 
@@ -104,7 +104,7 @@ data_boleto_DAS = None
 data_boleto_DARF = None
 data_boleto_unica = None
 
-# Caso seja um email NORMAL ou LEMBRETE.
+# Caso seja um email tipo NORMAL ou LEMBRETE.
 if int(tipo_email) < 3:
 
     mesma_data = input("Os boletos DAS e DARF vencem no mesmo dia? Digite 'S' para sim e 'N' para não: ")
@@ -134,8 +134,8 @@ if int(tipo_email) < 3:
         print("CONFIRMAÇÃO INVÁLIDA, por favor reinicie o programa.")
         sys.exit()
 
-# Caso seja um email de PARCELAMENTO.
-else:
+# Caso seja um email tipo PARCELAMENTO.
+elif int(tipo_email) == 3:
 
     # Pede a data de vencimento.
     data_boleto_unica = input("Data de vencimento no formato DD/MM/AAAA: ")
@@ -154,13 +154,13 @@ else:
 
 confirmacao_texto = None
 
-# Caso seja um email NORMAL ou LEMBRETE.
+# Caso seja um email tipo NORMAL ou LEMBRETE.
 if int(tipo_email) < 3:
     if data_boleto_unica == None:
         confirmacao_texto = "Ambas as datas estão corretas? Digite 'S' para sim ou 'N' para não: "
 
-# Caso seja um email de PARCELAMENTO.
-else:
+# Caso seja um email tipo PARCELAMENTO.
+elif int(tipo_email) == 3:
     confirmacao_texto = "A data está correta? Digite 'S' para sim ou 'N' para não: "
 
 # Confirmação.
@@ -194,12 +194,9 @@ servidor.starttls(context=contexto)
 servidor.login(email_origem, senha_do_app)
 
 #-----------------------------------------------------------------------------------------------------------------------
-# Variáveis para registro de listas.
+# Criação das listas com códigos de cliente e nomes de arquivo.
 
-# Prepara listas com códigos de cliente que tem PDF correspondente para envio de email NORMAL ou LEMBRETE.
-pastas_normal_lembrete = ["DAS", "Faturamentos", "FOLHA"]
-
-# Listas para códigos.
+# Listas para códigos de cliente.
 lista_cod_DAS = []
 lista_cod_faturamentos = []
 lista_cod_DARF = []
@@ -211,11 +208,10 @@ lista_faturamentos = []
 lista_DARF = []
 lista_parcelamentos = [] # PODE CONTER MAIS DE 1 RESULTADO POR CLIENTE!
 
-# Caso seja um email NORMAL ou LEMBRETE.
-# Procura as pastas "DAS", "Faturamentos" e "FOLHA" entre todos os arquivos da pasta.
+# Caso seja um email tipo NORMAL ou LEMBRETE.
 if int(tipo_email) < 3:
 
-    for item in pastas_normal_lembrete:
+    for item in ["DAS", "Faturamentos", "FOLHA"]:
 
         # Define qual pasta está sendo usada.
         pasta = os.listdir(item)
@@ -242,9 +238,8 @@ if int(tipo_email) < 3:
                     lista_cod_DARF.append(int(codigo_cliente))
                     lista_DARF.append(nome_arquivo)
 
-# Caso seja um email de PARCELAMENTO.
-# Procura a pasta "Parcelamentos".
-else:
+# Caso seja um email tipo PARCELAMENTO.
+elif int(tipo_email) == 3:
 
     # Popula listas de códigos de cliente e seus respectivos nomes de documento.
     for nome_arquivo in os.listdir("Parcelamentos"):
@@ -254,6 +249,16 @@ else:
 
         lista_cod_parcelamentos.append(int(codigo_cliente))
         lista_parcelamentos.append(nome_arquivo)
+
+# Caso seja um email tipo VENCIDO.
+else:
+
+    # Popula listas de códigos de cliente e seus respectivos nomes de documento.
+    for nome_arquivo in "Faturamentos":
+
+        codigo_cliente = nome_arquivo.split(" - ")[1]
+        lista_cod_faturamentos.append(int(codigo_cliente))
+        lista_faturamentos.append(nome_arquivo)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # TESTE: Mostra códigos de cliente e seus arquivos associados.
